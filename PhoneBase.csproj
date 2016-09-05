@@ -15,7 +15,7 @@
     <ManifestCertificateThumbprint>335DE0983A7F7DF7BBF1C8C4027AAEADE04C4D6E</ManifestCertificateThumbprint>
     <ManifestKeyFile>PhoneBase_TemporaryKey.pfx</ManifestKeyFile>
     <GenerateManifests>true</GenerateManifests>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <TargetZone>

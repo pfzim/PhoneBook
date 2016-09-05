@@ -93,7 +93,6 @@ namespace PhoneBase
 				return ((AssemblyCompanyAttribute)attributes[0]).Company;
 			}
 		}
-		#endregion
-
-	}
+        #endregion
+    }
 }

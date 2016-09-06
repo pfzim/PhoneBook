@@ -14,7 +14,7 @@ namespace PhoneBase
 {
     public partial class Form1 : Form
     {
-        public static bool local_version = false;
+        public static bool local_version = true;
 
         public static string datafile = null;
 		public static bool unsaved = false;
@@ -624,7 +624,7 @@ namespace PhoneBase
 		{
             System.Xml.XmlReader reader = null;
             FileStream stream1 = null;
-            Stream stream2 = null;
+            //Stream stream2 = null;
 
             if (local_version)
             {
@@ -675,18 +675,19 @@ namespace PhoneBase
                     return;
                 }
 
-                stream1 = new FileStream(datafile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                reader = new System.Xml.XmlTextReader(stream1);
+                //stream1 = new FileStream(datafile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                //reader = new System.Xml.XmlTextReader(stream1);
+                reader = new System.Xml.XmlTextReader(datafile);
             }
             else
             {
             lb_load:
                 try
                 {
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(datafile);
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                    stream2 = response.GetResponseStream();
-                    reader = new System.Xml.XmlTextReader(stream2);
+                    //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(datafile);
+                    //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    //stream2 = response.GetResponseStream();
+                    reader = new System.Xml.XmlTextReader(datafile);
                 }
                 catch
                 {
@@ -799,6 +800,7 @@ namespace PhoneBase
 			}
 			reader.Close();
 
+            /*
             if (local_version)
             {
                 stream1.Close();
@@ -807,6 +809,7 @@ namespace PhoneBase
             {
                 stream2.Close();
             }
+            */
 
             comboBox1.SelectedIndex = 0;
 

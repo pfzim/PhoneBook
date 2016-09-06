@@ -14,7 +14,7 @@ namespace PhoneBase
 {
     public partial class Form1 : Form
     {
-        public static bool local_version = true;
+        public static bool local_version = false;
 
         public static string datafile = null;
 		public static bool unsaved = false;
@@ -32,9 +32,9 @@ namespace PhoneBase
 			config = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\phonebook.cfg";
 			if(File.Exists(config))
 			{
-				FileStream stream = new FileStream(config, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+				//FileStream stream = new FileStream(config, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-				System.Xml.XmlReader reader = new System.Xml.XmlTextReader(stream);
+				System.Xml.XmlReader reader = new System.Xml.XmlTextReader(config);
 
 				bool getval = false;
 
@@ -57,9 +57,9 @@ namespace PhoneBase
 							break;
 					}
 				}
-				//datafile = "\\\\Fileserver\\Папка обмена\\Телефонный справочник\\base.xml";
-				reader.Close();
-				stream.Close();
+
+                reader.Close();
+				//stream.Close();
 			}
 
 			LoadBase();
@@ -482,7 +482,12 @@ namespace PhoneBase
 
 		private void linkLabel7_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			XmlTextWriter w = new XmlTextWriter(datafile, Encoding.Default);
+            if(datafile == null)
+            {
+                datafile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\base.xml";
+            }
+
+            XmlTextWriter w = new XmlTextWriter(datafile, Encoding.Default);
 			w.Formatting = Formatting.Indented;
 			w.Indentation = 1;
 			w.IndentChar = '\t';
@@ -623,19 +628,39 @@ namespace PhoneBase
 		private void LoadBase()
 		{
             System.Xml.XmlReader reader = null;
-            FileStream stream1 = null;
-            //Stream stream2 = null;
 
-            if (local_version)
+        lb_load:
+            if (datafile == null)
             {
-                if ((datafile == null) || !File.Exists(datafile))
+                Form5 form5 = new Form5();
+
+                if (form5.ShowDialog() == DialogResult.OK)
                 {
-                    MessageBox.Show("Can't open database file.");
+                    local_version = true;
+                    linkLabel6.Visible = true;
+                }
+                else
+                {
+                    local_version = false;
+                    linkLabel6.Visible = false;
+                }
 
-                    datafile = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\base.xml";
+                if (!local_version)
+                {
+                    Form4 form4 = new Form4();
 
+                    form4.textBox1.Text = datafile;
+
+                    if (form4.ShowDialog() == DialogResult.OK)
+                    {
+                        datafile = form4.textBox1.Text;
+                    }
+                }
+                else
+                {
                     FolderBrowserDialog fd = new FolderBrowserDialog();
                     fd.Description = "Выберите папку, где находится база данных (base.xml)";
+                    fd.SelectedPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
                     do
                     {
@@ -651,154 +676,119 @@ namespace PhoneBase
                         }
                         //datafile = path + "base.xml";
                     } while (!File.Exists(datafile));
-
-                    XmlTextWriter w = new XmlTextWriter(config, Encoding.Default);
-                    w.Formatting = Formatting.Indented;
-                    w.Indentation = 1;
-                    w.IndentChar = '\t';
-                    w.WriteStartDocument(true);
-                    w.WriteStartElement("config");
-
-                    w.WriteStartElement("basefile");
-                    w.WriteString(datafile);
-                    w.WriteEndElement();
-
-                    w.WriteEndElement();
-                    w.WriteEndDocument();
-                    w.Flush();
-                    w.Close();
                 }
+           }
 
-                if (!File.Exists(datafile))
-                {
-                    MessageBox.Show("Can't open database file.\n" + datafile);
-                    return;
-                }
-
-                //stream1 = new FileStream(datafile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                //reader = new System.Xml.XmlTextReader(stream1);
-                reader = new System.Xml.XmlTextReader(datafile);
-            }
-            else
+            if (datafile == null)
             {
-            lb_load:
-                try
-                {
-                    //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(datafile);
-                    //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                    //stream2 = response.GetResponseStream();
-                    reader = new System.Xml.XmlTextReader(datafile);
-                }
-                catch
-                {
-                    if (!local_version)
-                    {
-                        Form4 form4 = new Form4();
-
-                        form4.textBox1.Text = datafile;
-
-                        if (form4.ShowDialog() == DialogResult.OK)
-                        {
-                            datafile = form4.textBox1.Text;
-                            XmlTextWriter w = new XmlTextWriter(config, Encoding.Default);
-                            w.Formatting = Formatting.Indented;
-                            w.Indentation = 1;
-                            w.IndentChar = '\t';
-                            w.WriteStartDocument(true);
-                            w.WriteStartElement("config");
-
-                            w.WriteStartElement("basefile");
-                            w.WriteString(datafile);
-                            w.WriteEndElement();
-
-                            w.WriteEndElement();
-                            w.WriteEndDocument();
-                            w.Flush();
-                            w.Close();
-
-                            goto lb_load;
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                }
+                local_version = true;
+                linkLabel6.Visible = true;
+                MessageBox.Show("Can't open database file.");
+                return;
             }
 
-            string[] row = null;
-			database.Clear();
+            XmlTextWriter w = new XmlTextWriter(config, Encoding.Default);
+            w.Formatting = Formatting.Indented;
+            w.Indentation = 1;
+            w.IndentChar = '\t';
+            w.WriteStartDocument(true);
+            w.WriteStartElement("config");
 
-            int column = 0;
+            w.WriteStartElement("basefile");
+            w.WriteString(datafile);
+            w.WriteEndElement();
 
-			comboBox1.Items.Clear();
-			comboBox1.Items.Add("Все организации");
+            w.WriteEndElement();
+            w.WriteEndDocument();
+            w.Flush();
+            w.Close();
 
-			while(reader.Read())
-			{
-				switch(reader.NodeType)
-				{
-					case XmlNodeType.Element:
-						column = 0;
-						if(reader.Name.CompareTo("contact") == 0)
-						{
-							row = new string[elements.Length];
-						}
-						else
-						{
-							int i = 1;
-							foreach(string element in elements)
-							{
-								if(element.CompareTo(reader.Name) == 0)
-								{
-									column = i;
-									break;
-								}
-								i++;
-							}
-						}
-						break;
-					case XmlNodeType.Text:
-						if((column > 0) && (row != null))
-						{
-							row[column - 1] = reader.Value;
-						}
-						switch(column)
-						{
-							case 6:
-								if(comboBox1.FindString(reader.Value) == -1)
-								{
-									comboBox1.Items.Add(reader.Value);
-								}
-								break;
-							/*
-								case 7:
-									if (comboBox2.FindString(reader.Value) == -1)
-									{
-										comboBox2.Items.Add(reader.Value);
-									}
-									break;
-								case 8:
-									if (comboBox3.FindString(reader.Value) == -1)
-									{
-										comboBox3.Items.Add(reader.Value);
-									}
-									break;
-							*/
-						}
-						break;
-					case XmlNodeType.EndElement:
-						if(reader.Name.CompareTo("contact") == 0)
-						{
-							if(row != null)
-							{
-								database.Add(row);
-							}
-						}
-						break;
-				}
-			}
-			reader.Close();
+            try
+            {
+                //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(datafile);
+                //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                //stream2 = response.GetResponseStream();
+                reader = new System.Xml.XmlTextReader(datafile);
+ 
+                string[] row = null;
+			    database.Clear();
+
+                int column = 0;
+
+			    comboBox1.Items.Clear();
+			    comboBox1.Items.Add("Все организации");
+
+			    while(reader.Read())
+			    {
+				    switch(reader.NodeType)
+				    {
+					    case XmlNodeType.Element:
+						    column = 0;
+						    if(reader.Name.CompareTo("contact") == 0)
+						    {
+							    row = new string[elements.Length];
+						    }
+						    else
+						    {
+							    int i = 1;
+							    foreach(string element in elements)
+							    {
+								    if(element.CompareTo(reader.Name) == 0)
+								    {
+									    column = i;
+									    break;
+								    }
+								    i++;
+							    }
+						    }
+						    break;
+					    case XmlNodeType.Text:
+						    if((column > 0) && (row != null))
+						    {
+							    row[column - 1] = reader.Value;
+						    }
+						    switch(column)
+						    {
+							    case 6:
+								    if(comboBox1.FindString(reader.Value) == -1)
+								    {
+									    comboBox1.Items.Add(reader.Value);
+								    }
+								    break;
+							    /*
+								    case 7:
+									    if (comboBox2.FindString(reader.Value) == -1)
+									    {
+										    comboBox2.Items.Add(reader.Value);
+									    }
+									    break;
+								    case 8:
+									    if (comboBox3.FindString(reader.Value) == -1)
+									    {
+										    comboBox3.Items.Add(reader.Value);
+									    }
+									    break;
+							    */
+						    }
+						    break;
+					    case XmlNodeType.EndElement:
+						    if(reader.Name.CompareTo("contact") == 0)
+						    {
+							    if(row != null)
+							    {
+								    database.Add(row);
+							    }
+						    }
+						    break;
+				    }
+			    }
+			    reader.Close();
+            }
+            catch
+            {
+                datafile = null;
+                goto lb_load;
+            }
 
             /*
             if (local_version)

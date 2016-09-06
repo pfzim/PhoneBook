@@ -24,45 +24,32 @@ namespace PhoneBase
 		public Form1()
         {
             InitializeComponent();
-            if(local_version)
+
+            config = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\phonebook.cfg";
+			if(File.Exists(config))
+			{
+                XmlDocument doc = new XmlDocument();
+                doc.Load(config);
+                XmlNode node = doc.DocumentElement.SelectSingleNode("/config/basefile");
+
+                if (node != null)
+                {
+                    datafile = node.InnerText;
+                }
+
+                node = doc.DocumentElement.SelectSingleNode("/config/local");
+                if(node != null && node.InnerText.ToLower() == "true")
+                {
+                    local_version = true;
+                }
+            }
+
+            if (local_version)
             {
                 linkLabel6.Visible = true;
             }
 
-			config = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\phonebook.cfg";
-			if(File.Exists(config))
-			{
-				//FileStream stream = new FileStream(config, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-				System.Xml.XmlReader reader = new System.Xml.XmlTextReader(config);
-
-				bool getval = false;
-
-				while(reader.Read())
-				{
-					switch(reader.NodeType)
-					{
-						case XmlNodeType.Element:
-							if(reader.Name.CompareTo("basefile") == 0)
-							{
-								getval = true;
-							}
-							break;
-						case XmlNodeType.Text:
-							if(getval)
-							{
-								datafile = reader.Value;
-								getval = false;
-							}
-							break;
-					}
-				}
-
-                reader.Close();
-				//stream.Close();
-			}
-
-			LoadBase();
+            LoadBase();
 
 			//System.Security.SecurityManager.PolicyHierarchy().MoveNext();
 			//textBox2.Text = System.Security.SecurityManager.PolicyHierarchy().Current.ToString();
@@ -696,6 +683,10 @@ namespace PhoneBase
 
             w.WriteStartElement("basefile");
             w.WriteString(datafile);
+            w.WriteEndElement();
+
+            w.WriteStartElement("local");
+            w.WriteString(local_version?"true":"false");
             w.WriteEndElement();
 
             w.WriteEndElement();

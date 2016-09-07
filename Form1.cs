@@ -208,7 +208,16 @@ namespace PhoneBase
 
 		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			System.Diagnostics.Process.Start("mailto:"+linkLabel1.Text);
+            if (e.Button == MouseButtons.Left)
+            {
+                System.Diagnostics.Process.Start("mailto:" + linkLabel1.Text);
+            }
+            /*
+            else if (e.Button == MouseButtons.Right)
+            {
+                Clipboard.SetText(linkLabel1.Text);
+            }
+            */
 		}
 
 		private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -696,9 +705,6 @@ namespace PhoneBase
 
             try
             {
-                //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(datafile);
-                //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                //stream2 = response.GetResponseStream();
                 reader = new System.Xml.XmlTextReader(datafile);
  
                 string[] row = null;
@@ -781,19 +787,13 @@ namespace PhoneBase
                 goto lb_load;
             }
 
-            /*
-            if (local_version)
-            {
-                stream1.Close();
-            }
-            else
-            {
-                stream2.Close();
-            }
-            */
-
             comboBox1.SelectedIndex = 0;
 
 		}
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(linkLabel1.Text);
+        }
     }
 }
